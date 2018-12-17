@@ -25,10 +25,8 @@ class DiscoGAN():
         self.img_shape = (self.img_rows, self.img_cols, self.channels)
 
         # Configure data loader
-        self.dataset_name = 'edges2shoes'
-        self.data_loader = DataLoader(dataset_name=self.dataset_name,
-                                      img_res=(self.img_rows, self.img_cols))
-
+        self.dataset_name = 'whatevers'
+        self.data_loader = DataLoader(img_res=(self.img_rows, self.img_cols))
 
         # Calculate output shape of D (PatchGAN)
         patch = int(self.img_rows / 2**4)
@@ -44,16 +42,16 @@ class DiscoGAN():
         self.d_A = self.build_discriminator()
         self.d_B = self.build_discriminator()
         self.d_A.compile(loss='mse',
-            optimizer=optimizer,
-            metrics=['accuracy'])
+                         optimizer=optimizer,
+                         metrics=['accuracy'])
         self.d_B.compile(loss='mse',
-            optimizer=optimizer,
-            metrics=['accuracy'])
+                         optimizer=optimizer,
+                         metrics=['accuracy'])
 
-        #-------------------------
+        # -------------------------
         # Construct Computational
         #   Graph of Generators
-        #-------------------------
+        # -------------------------
 
         # Build the generators
         self.g_AB = self.build_generator()
@@ -81,21 +79,21 @@ class DiscoGAN():
         # Objectives
         # + Adversarial: Fool domain discriminators
         # + Translation: Minimize MAE between e.g. fake B and true B
-        # + Cycle-consistency: Minimize MAE between reconstructed images and original
+        # + Cycle-consistency: Minimize MAE between reconstructed images and
+        # original
         self.combined = Model(inputs=[img_A, img_B],
-                              outputs=[ valid_A, valid_B,
-                                        fake_B, fake_A,
-                                        reconstr_A, reconstr_B ])
+                              outputs=[valid_A, valid_B,
+                                       fake_B, fake_A,
+                                       reconstr_A, reconstr_B])
         self.combined.compile(loss=['mse', 'mse',
                                     'mae', 'mae',
                                     'mae', 'mae'],
                               optimizer=optimizer)
 
     def build_generator(self):
-        """U-Net Generator"""
-
+        """U-Net Generator."""
         def conv2d(layer_input, filters, f_size=4, normalize=True):
-            """Layers used during downsampling"""
+            """Layers used during downsampling."""
             d = Conv2D(filters, kernel_size=f_size, strides=2, padding='same')(layer_input)
             d = LeakyReLU(alpha=0.2)(d)
             if normalize:
@@ -103,7 +101,7 @@ class DiscoGAN():
             return d
 
         def deconv2d(layer_input, skip_input, filters, f_size=4, dropout_rate=0):
-            """Layers used during upsampling"""
+            """Layers used during upsampling."""
             u = UpSampling2D(size=2)(layer_input)
             u = Conv2D(filters, kernel_size=f_size, strides=1, padding='same', activation='relu')(u)
             if dropout_rate:
@@ -139,9 +137,9 @@ class DiscoGAN():
         return Model(d0, output_img)
 
     def build_discriminator(self):
-
+        """TODO."""
         def d_layer(layer_input, filters, f_size=4, normalization=True):
-            """Discriminator layer"""
+            """Discriminator layer."""
             d = Conv2D(filters, kernel_size=f_size, strides=2, padding='same')(layer_input)
             d = LeakyReLU(alpha=0.2)(d)
             if normalization:
