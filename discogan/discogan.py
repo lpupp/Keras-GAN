@@ -6,7 +6,7 @@ from keras.layers import Input, Dense, Reshape, Flatten, Dropout, Concatenate
 from keras.layers import BatchNormalization, Activation, ZeroPadding2D
 from keras.layers.advanced_activations import LeakyReLU
 from keras.layers.convolutional import UpSampling2D, Conv2D
-from keras.models import Sequential, Model
+from keras.models import Sequential, Model, load_model
 from keras.optimizers import Adam
 import datetime
 import matplotlib.pyplot as plt
@@ -17,6 +17,7 @@ import os
 
 class DiscoGAN():
     def __init__(self):
+        loadmodel = False
         # Input shape
         self.img_rows = 128
         self.img_cols = 128
@@ -38,8 +39,12 @@ class DiscoGAN():
         optimizer = Adam(0.0002, 0.5)
 
         # Build and compile the discriminators
-        self.d_A = self.build_discriminator()
-        self.d_B = self.build_discriminator()
+        if loadmodel:
+            self.d_A = load_model('./model/d_A.h5')
+            self.d_B = load_model('.model/d_B.h5')
+        else:
+            self.d_A = self.build_discriminator()
+            self.d_B = self.build_discriminator()
         self.d_A.compile(loss='mse',
                          optimizer=optimizer,
                          metrics=['accuracy'])
@@ -53,8 +58,12 @@ class DiscoGAN():
         # -------------------------
 
         # Build the generators
-        self.g_AB = self.build_generator()
-        self.g_BA = self.build_generator()
+        if loadmodel:
+            self.g_AB = load_model('./model/g_AB.h5')
+            self.g_BA = load_model('.model/g_BA.h5')
+        else:
+            self.g_AB = self.build_generator()
+            self.g_BA = self.build_generator()
 
         # Input images from both domains
         img_A = Input(shape=self.img_shape)
@@ -231,14 +240,21 @@ class DiscoGAN():
         cnt = 0
         for i in range(r):
             for j in range(c):
-                axs[i,j].imshow(gen_imgs[cnt])
+                axs[i, j].imshow(gen_imgs[cnt])
                 axs[i, j].set_title(titles[j])
-                axs[i,j].axis('off')
+                axs[i, j].axis('off')
                 cnt += 1
         fig.savefig("images/%s/%d_%d.png" % (self.dataset_name, epoch, batch_i))
         plt.close()
+
+    def save_model(self, filepath='./models'):
+        self.g_AB.save(os.join(filepath, 'g_AB.h5'))
+        self.g_BA.save(os.join(filepath, 'g_BA.h5'))
+        self.d_A.save(os.join(filepath, 'd_A.h5'))
+        self.d_B.save(os.join(filepath, 'd_B.h5'))
 
 
 if __name__ == '__main__':
     gan = DiscoGAN()
     gan.train(epochs=20, batch_size=1, sample_interval=200)
+    gan.save_model()
