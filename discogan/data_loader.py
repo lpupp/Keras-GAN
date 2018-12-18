@@ -18,15 +18,8 @@ class DataLoader():
 
         imgs_s, imgs_h = [], []
         for img_e2s, img_e2h in zip(batch_e2s, batch_e2h):
-            img_e2s = self.imread(img_e2s)
-            _, ws, _ = img_e2s.shape
-            half_ws = int(ws/2)
-            img_s = img_e2s[:, half_ws:, :]
-
-            img_e2h = self.imread(img_e2h)
-            _, wh, _ = img_e2h.shape
-            half_wh = int(wh/2)
-            img_h = img_e2h[:, half_wh:, :]
+            img_s = self.imread(img_e2s)
+            img_h = self.imread(img_e2h)
 
             img_s = scipy.misc.imresize(img_s, self.img_res)
             img_h = scipy.misc.imresize(img_h, self.img_res)
@@ -57,10 +50,7 @@ class DataLoader():
             batch_h = path_e2h[i*batch_size:(i+1)*batch_size]
             imgs_s, imgs_h = [], []
             for img in batch_h:
-                img = self.imread(img)
-                h, w, _ = img.shape
-                half_w = int(w/2)
-                img_h = img[:, half_w:, :]
+                img_h = self.imread(img)
                 img_h = scipy.misc.imresize(img_h, self.img_res)
 
                 if not is_testing and np.random.random() > 0.5:
@@ -75,10 +65,7 @@ class DataLoader():
                 batch_s = path_e2s[j*batch_size:(j+1)*batch_size]
 
             for img in batch_s:
-                img = self.imread(img)
-                h, w, _ = img.shape
-                half_w = int(w/2)
-                img_s = img[:, half_w:, :]
+                img_s = self.imread(img)
                 img_s = scipy.misc.imresize(img_s, self.img_res)
 
                 if not is_testing and np.random.random() > 0.5:

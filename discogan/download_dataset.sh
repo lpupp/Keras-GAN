@@ -7,3 +7,6 @@ wget -N $URL -O $TAR_FILE
 mkdir $TARGET_DIR
 tar -zxvf $TAR_FILE -C ./datasets/
 rm $TAR_FILE
+
+python3 extract_imgs.py edges2handbags
+python3 extract_imgs.py edges2shoes
