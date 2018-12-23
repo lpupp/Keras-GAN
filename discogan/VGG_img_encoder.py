@@ -14,6 +14,7 @@ import numpy as np
 from keras.applications import vgg19
 import sklearn.metrics
 import scipy.spatial
+import skimage.measure
 
 import matplotlib.pyplot as plt
 
@@ -35,13 +36,11 @@ def euclid(x, y):
     return scipy.spatial.distance.euclidean(x, y)
 
 #%%
-# I will probably need to add an input_tensor when combining this with the GAN
-#vgg = vgg19.VGG19(include_top=False, weights='imagenet', input_tensor=None, input_shape=(256, 256, 3), pooling=None)
 vgg = vgg19.VGG19(include_top=False, weights='imagenet', input_shape=(256, 256, 3), pooling='max')
 
 vgg.compile(loss='mse', optimizer='adam', metrics=['accuracy'])
 
-#%%
+#%% Load n images
 imgs = []
 for i in range(n):
     img = scipy.misc.imread(path[i], mode='RGB').astype(np.float)
@@ -50,11 +49,11 @@ for i in range(n):
 
 imgs = np.stack(imgs)
 
+# Generate image embeddings
 img_embed = vgg.predict(imgs)
-#img_embed = img_embed.flatten()
 print(img_embed.shape)
 
-#%%
+#%% Find similarities and most similar
 cossim = {}
 amax = {}
 for target in range(n):
@@ -66,15 +65,17 @@ for target in range(n):
     top1 = top2[top2 != target]
     amax[target] = top1.item()
 
-#%%
-i = 14
+#%% Display highest similarity matches for image i
+i = 24
 k, v = list(amax.keys()), list(amax.values())
 plt.imshow(np.concatenate((imgs[k[i]], imgs[v[i]]), axis=1))
 
-#%%
+#%% ZALANDO DATASET ----------------------------------------------------------
 # https://convertio.co/jp2-jpg/
+
+# Load pretrained model with zalando image dims
 vggz = vgg19.VGG19(include_top=False, weights='imagenet', input_shape=(1100, 762, 3), pooling='max')
-# Zalando
+# Load zalando images
 pathz = glob('./datasets/zalando_test/*')
 
 imgsz = []
@@ -85,14 +86,14 @@ for i in pathz:
 
 imgsz = np.stack(imgsz)
 
+# Generate embeddings
 img_embedz = vggz.predict(imgsz)
-#img_embed = img_embed.flatten()
 print(img_embedz.shape)
 
 #%%
-# 1, 12, 18, 21
-# 26 fails
-target = 26
+# Works relatively well: 1, 12, 18, 21
+# Possibly doesn't work: 26
+target = 21
 plt.imshow(imgs[target])
 cs = []
 for i in range(9):
@@ -100,3 +101,27 @@ for i in range(9):
 
 #%%
 plt.imshow(imgsz[np.argmax(np.array(cs))])
+
+
+#%% DISCOGAN STYLE TRANSFER --------------------------------------------------
+# I dont know which of these I actually need
+from keras.models import load_model
+from keras_contrib.layers.normalization import InstanceNormalization
+from keras.layers import Input, Dense, Reshape, Flatten, Dropout, Concatenate
+from keras.layers import BatchNormalization, Activation, ZeroPadding2D
+from keras.layers.advanced_activations import LeakyReLU
+from keras.layers.convolutional import UpSampling2D, Conv2D
+from keras.optimizers import Adam
+
+#%%
+# Load models
+g_AB = load_model('./models/g_AB_0.h5')
+g_BA = load_model('./models/g_BA_0.h5')
+
+#%%
+i = 1
+# max pool image to correct dimension
+img_ = skimage.measure.block_reduce(imgs[i], (2, 2, 1), np.max)
+img_trans = g_BA.predict(np.expand_dims(img_, axis=0))
+plt.imshow(np.concatenate((img_, img_trans[0]), axis=1))
+

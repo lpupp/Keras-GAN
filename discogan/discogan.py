@@ -40,8 +40,8 @@ class DiscoGAN():
 
         # Build and compile the discriminators
         if loadmodel:
-            self.d_A = load_model('./model/d_A.h5')
-            self.d_B = load_model('.model/d_B.h5')
+            self.d_A = load_model('./models/d_A.h5')
+            self.d_B = load_model('.models/d_B.h5')
         else:
             self.d_A = self.build_discriminator()
             self.d_B = self.build_discriminator()
@@ -59,8 +59,8 @@ class DiscoGAN():
 
         # Build the generators
         if loadmodel:
-            self.g_AB = load_model('./model/g_AB.h5')
-            self.g_BA = load_model('.model/g_BA.h5')
+            self.g_AB = load_model('./models/g_AB.h5')
+            self.g_BA = load_model('.models/g_BA.h5')
         else:
             self.g_AB = self.build_generator()
             self.g_BA = self.build_generator()
@@ -165,7 +165,7 @@ class DiscoGAN():
 
         return Model(img, validity)
 
-    def train(self, epochs, batch_size=128, sample_interval=50):
+    def train(self, epochs, batch_size=128, sample_interval=50, save_interval=50):
 
         start_time = datetime.datetime.now()
 
@@ -217,6 +217,10 @@ class DiscoGAN():
                 if batch_i % sample_interval == 0:
                     self.sample_images(epoch, batch_i)
 
+                if batch_i % save_interval == 0:
+                    self.save_model()
+
+
     def sample_images(self, epoch, batch_i):
         os.makedirs('images/%s' % self.dataset_name, exist_ok=True)
         r, c = 2, 3
@@ -247,14 +251,13 @@ class DiscoGAN():
         fig.savefig("images/%s/%d_%d.png" % (self.dataset_name, epoch, batch_i))
         plt.close()
 
-    def save_model(self, filepath='./models'):
-        self.g_AB.save(os.join(filepath, 'g_AB.h5'))
-        self.g_BA.save(os.join(filepath, 'g_BA.h5'))
-        self.d_A.save(os.join(filepath, 'd_A.h5'))
-        self.d_B.save(os.join(filepath, 'd_B.h5'))
+    def save_model(self, filepath='./models', suffix=0):
+        self.g_AB.save(os.path.join(filepath, 'g_AB_{}.h5'.format(suffix)))
+        self.g_BA.save(os.path.join(filepath, 'g_BA_{}.h5'.format(suffix)))
+        self.d_A.save(os.path.join(filepath, 'd_A_{}.h5'.format(suffix)))
+        self.d_B.save(os.path.join(filepath, 'd_B_{}.h5'.format(suffix)))
 
 
 if __name__ == '__main__':
     gan = DiscoGAN()
-    gan.train(epochs=20, batch_size=1, sample_interval=200)
-    gan.save_model()
+    gan.train(epochs=20, batch_size=1, sample_interval=200, save_interval=200)
