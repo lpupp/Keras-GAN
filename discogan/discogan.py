@@ -1,6 +1,8 @@
 from __future__ import print_function, division
 import scipy
 
+import random
+
 from keras_contrib.layers.normalization import InstanceNormalization
 from keras.layers import Input, Dense, Reshape, Flatten, Dropout, Concatenate
 from keras.layers import BatchNormalization, Activation, ZeroPadding2D
@@ -166,6 +168,7 @@ class DiscoGAN():
         return Model(img, validity)
 
     def train(self, epochs, batch_size=128, sample_interval=50, save_interval=50):
+        random.seed(9001)
 
         start_time = datetime.datetime.now()
 

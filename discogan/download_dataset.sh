@@ -8,5 +8,14 @@ mkdir $TARGET_DIR
 tar -zxvf $TAR_FILE -C ./datasets/
 rm $TAR_FILE
 
+FILE=$2
+URL=https://people.eecs.berkeley.edu/~tinghuiz/projects/pix2pix/datasets/$FILE.tar.gz
+TAR_FILE=./datasets/$FILE.tar.gz
+TARGET_DIR=./datasets/$FILE/
+wget -N $URL -O $TAR_FILE
+mkdir $TARGET_DIR
+tar -zxvf $TAR_FILE -C ./datasets/
+rm $TAR_FILE
+
 python3 extract_imgs.py edges2handbags
 python3 extract_imgs.py edges2shoes

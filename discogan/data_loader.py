@@ -1,6 +1,7 @@
 import scipy
 from glob import glob
 import numpy as np
+from random import shuffle
 
 class DataLoader():
     def __init__(self, img_res=(128, 128)):
@@ -43,37 +44,34 @@ class DataLoader():
 
         self.n_batches_s = int(len(path_e2s) / batch_size)
         self.n_batches_h = int(len(path_e2h) / batch_size)
-        self.n_batches = max(self.n_batches_s, self.n_batches_h)
+        self.n_batches = min(self.n_batches_s, self.n_batches_h)
 
-        j = 0
+        shuffle(path_e2h)
+        shuffle(path_e2s)
+
         for i in range(self.n_batches-1):
             batch_h = path_e2h[i*batch_size:(i+1)*batch_size]
+            batch_s = path_e2s[i*batch_size:(i+1)*batch_size]
             imgs_s, imgs_h = [], []
+
             for img in batch_h:
                 img_h = self.imread(img)
                 img_h = scipy.misc.imresize(img_h, self.img_res)
 
                 if not is_testing and np.random.random() > 0.5:
-                        img_h = np.fliplr(img_h)
+                    img_h = np.fliplr(img_h)
 
                 imgs_h.append(img_h)
-
-            try:
-                batch_s = path_e2s[j*batch_size:(j+1)*batch_size]
-            except IndexError:
-                j = 0
-                batch_s = path_e2s[j*batch_size:(j+1)*batch_size]
 
             for img in batch_s:
                 img_s = self.imread(img)
                 img_s = scipy.misc.imresize(img_s, self.img_res)
 
                 if not is_testing and np.random.random() > 0.5:
-                        img_s = np.fliplr(img_s)
+                    img_s = np.fliplr(img_s)
 
                 imgs_s.append(img_s)
 
-            j += 1
             imgs_h = np.array(imgs_h)/127.5 - 1.
             imgs_s = np.array(imgs_s)/127.5 - 1.
 
