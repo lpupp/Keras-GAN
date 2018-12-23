@@ -19,7 +19,7 @@ import os
 
 class DiscoGAN():
     def __init__(self):
-        loadmodel = False
+        loadmodel = True
         # Input shape
         self.img_rows = 128
         self.img_cols = 128
@@ -42,8 +42,8 @@ class DiscoGAN():
 
         # Build and compile the discriminators
         if loadmodel:
-            self.d_A = load_model('./models/d_A.h5')
-            self.d_B = load_model('.models/d_B.h5')
+            self.d_A = load_model('./models/d_A_0.h5')
+            self.d_B = load_model('./models/d_B_0.h5')
         else:
             self.d_A = self.build_discriminator()
             self.d_B = self.build_discriminator()
@@ -61,8 +61,8 @@ class DiscoGAN():
 
         # Build the generators
         if loadmodel:
-            self.g_AB = load_model('./models/g_AB.h5')
-            self.g_BA = load_model('.models/g_BA.h5')
+            self.g_AB = load_model('./models/g_AB_0.h5')
+            self.g_BA = load_model('./models/g_BA_0.h5')
         else:
             self.g_AB = self.build_generator()
             self.g_BA = self.build_generator()
