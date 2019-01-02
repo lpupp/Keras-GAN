@@ -38,7 +38,8 @@ class DiscoGAN():
         self.gf = 64
         self.df = 64
 
-        optimizer = Adam(0.0002, 0.5)
+        # Note: This decay may or may not be the same used in the pytorch code
+        optimizer = Adam(lr=0.0002, beta_1=0.5, beta_2=0.999, decay=0.00001)
 
         # Build and compile the discriminators
         if loadmodel:
@@ -47,6 +48,7 @@ class DiscoGAN():
         else:
             self.d_A = self.build_discriminator()
             self.d_B = self.build_discriminator()
+
         self.d_A.compile(loss='mse',
                          optimizer=optimizer,
                          metrics=['accuracy'])
@@ -263,4 +265,4 @@ class DiscoGAN():
 
 if __name__ == '__main__':
     gan = DiscoGAN()
-    gan.train(epochs=20, batch_size=1, sample_interval=200, save_interval=200)
+    gan.train(epochs=20, batch_size=256, sample_interval=200, save_interval=200)
