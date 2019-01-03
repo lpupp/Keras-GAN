@@ -5,7 +5,7 @@ Created on Dec 18 2018
 
 Removes "edges" part of images in dataset.
 
-@author: lucagaegauf
+@author: lpupp
 """
 
 import sys
